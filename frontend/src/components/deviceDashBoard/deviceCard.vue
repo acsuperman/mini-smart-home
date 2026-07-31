@@ -17,7 +17,9 @@ const onSyncButtonClick=()=>{
         emit("changeIhostAuthDialogVisble",true)
     }
     else{
-        integrateDevice(device.value)
+        integrateDevice(device.value).then(()=>{
+            
+        })
     }
 }
 
