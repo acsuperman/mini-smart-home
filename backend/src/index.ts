@@ -4,7 +4,6 @@ import express, { Express } from 'express';
 import { connectEWeLink } from '@/cloud/init';
 import router from './routes';
 
-// 兜底：任何未捕获的 Promise reject 都打印出来，而不是崩掉整个进程
 process.on('unhandledRejection', (reason) => {
   console.error('UnhandledPromiseRejection:', inspect(reason, { depth: null, colors: true }));
 });

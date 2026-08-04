@@ -63,7 +63,7 @@ const onDisSyncButtonClick=()=>{
             style="display: flex;width: 100%; height: 52px; font-size-adjust: auto;font-stretch: ultra-condensed; color: #666;font-weight: bold;margin-top: 40px; margin-left: 16px">
             {{ device.name + (!isOnline ? "(离线)" : "") }}
         </div>
-        <div v-if="isTarget && isOnline" :style="{ width: '100%', fontSize: '13px', textAlign: 'center', backgroundColor: workModeBackground, position: 'relative' }">
+        <div v-if="isTarget && isOnline" :style="{ width: '100%', fontSize: '13px', textAlign: 'center', backgroundColor: workModeBackground, position: 'absolute', bottom: '0',borderBottomLeftRadius: '16px', borderBottomRightRadius: '16px' }">
            {{getThermostatChineseName( Number(device.params.workMode)) }}
         </div>
         <div v-else-if="!isTarget" text-align:center style="color: #999; font-size: 14px;">
