@@ -1,4 +1,4 @@
-import { ERequestIhostHeadName, ECapabilityType, EThermostatTargetSetpointSubName } from '@/enum';
+import { ERequestIhostHeadName, ECapabilityType, EThermostatTargetSetpointSubName,EDirectiveResponseHeadName } from '@/enum';
 import { cloudSideUserInfo,wsClient } from '@/store';
 import { ThermostatCapabilities, WeeklyEntry, WeeklySchedule } from '@/interface';
 import { WEEKLY_SCHEDULE_PARAM_KEYS, WEEKLY_SCHEDULE_DAY_NAMES,dispatchLongLinkUrlMap } from '@/common';
@@ -61,21 +61,19 @@ export const paramsToWeeklySchedule = (
   params: Record<string, any>,
 ): void => {
   const autoCapa = findAutoModeCapa(capabilities);
+  const weeklySchedule = autoCapa!.configuration!.weeklySchedule;
 
   if (!autoCapa?.configuration) return;
-
-  const schedule: WeeklySchedule = {};
 
   for (let i = 0; i < WEEKLY_SCHEDULE_PARAM_KEYS.length; i++) {
     const hex = params[WEEKLY_SCHEDULE_PARAM_KEYS[i]] ;
 
     if (hex)
-      schedule[WEEKLY_SCHEDULE_DAY_NAMES[i]] = parseDayHexSchedule(hex);
+      weeklySchedule[WEEKLY_SCHEDULE_DAY_NAMES[i]] = parseDayHexSchedule(hex);
+    else
+      delete weeklySchedule[WEEKLY_SCHEDULE_DAY_NAMES[i]];
   }
 
-  Object.assign(autoCapa.configuration.weeklySchedule, {
-    ...schedule ,
-  });
 };
 
 /** capabilities AUTO_MODE weeklySchedule → 日程 hex params */
@@ -121,3 +119,9 @@ export const getAndConnectWsUrl = async () => {
 };
 
 export const generateRes = (error,message,data) => ({ error,message,data });
+
+export const toIhostResHeader = (name: EDirectiveResponseHeadName, message_id: string) => ({
+  name,
+  message_id,
+  version: '1',
+});

@@ -213,3 +213,5 @@ export const countries: Array<{ name: string; code: string }> = [
     { name: '津巴布韦', code: '+263' },
 ]
 
+export const WEEKLY_SCHEDULE_PARAM_KEYS = ['mon', 'tues', 'wed', 'thur', 'fri', 'sat', 'sun'] as const;
+export const WEEKLY_SCHEDULE_DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;

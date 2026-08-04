@@ -1,5 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import Antd from 'ant-design-vue';
+import 'ant-design-vue/dist/antd.css';
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -11,7 +13,7 @@ import App from './App.vue'
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 const app = createApp(App)
-app.use(pinia).use(router).use(ElementPlus).mount('#app')
+app.use(Antd).use(pinia).use(router).use(ElementPlus).mount('#app')
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }

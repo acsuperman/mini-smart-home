@@ -48,14 +48,19 @@ export interface ItemData {
   brandName: string;
   ihostSideSerialNumber: string;
   params: {
-    switches: Array<{ outlet: number; switch: 'on' | 'off' }>;
-    online: boolean;
     fwVersion: string;
     workMode: string;
     workState: string;
     manTargetTemp: number;
     autoTargetTemp: number;
     ecoTargetTemp: number;
+    'mon': string;
+    'tues': string;
+    'wed': string;
+    'thur': string;
+    'fri': string;
+    'sat': string;
+    'sun': string;
   };
 }
 
@@ -99,7 +104,7 @@ export interface EndpointObject {
 export interface DiscoveryEndpoint {
   name: string;
   third_serial_number: string;
-  display_category: 'thermostat';
+  display_category: string;
   capabilities: ThermostatCapabilities[];
   state: Record<string, any>;
   manufacturer: string;

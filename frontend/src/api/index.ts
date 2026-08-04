@@ -33,13 +33,23 @@ export const shutoffCloudSideConnect =()=>{
 }
 
 export const getOpenToken =()=>{
-    return axios.post('/api/openToken')
+    return axios.get('/api/openToken')
 }
 
 export const integrateDevice =(device:itemData)=>{
     return axios.post('/api/devices/integrate',device)
 }
 
-export const disIntegrateDevice =()=>{
-    return axios.delete('/api/devices/integrate')
+export const disIntegrateDevice =(device:itemData)=>{
+    return axios.delete('/api/devices/integrate',{
+        data:device
+    })
+}
+
+export const sseBridge = () => {
+    return axios.get('/api/sse/bridge')
+}
+
+export const updateDevice=(deviceid:string,params:Record<string,any>)=>{
+    return axios.patch(`/api/device/${deviceid}`,params)
 }

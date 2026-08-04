@@ -2,14 +2,11 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import { userLogin, getFamilyDeviceList, shutoffCloudSideConnect } from "@/api";
 import router from "@/router";
-import api from "@/api/axios";
 import { ElLoading } from 'element-plus'
-import type { loginResponse, familyResponse, itemData, familyDeviceListResponse } from "@/interface";
+import type {  familyResponse, familyDeviceListResponse,roomDeviceList } from "@/interface";
 
 
-interface roomDeviceList {
-    [roomId: string]: itemData[]
-}
+
 
 export const useUserStore = defineStore("user", () => {
     const familyInfo = ref<familyResponse>({

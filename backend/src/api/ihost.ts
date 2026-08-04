@@ -12,3 +12,7 @@ export const requestIhost = (body: IhostRequestBody) => {
 export const getIhostDevices = () => {
   return axios.get<any, GetIhostDevicesRes>('/open-api/v1/rest/devices');
 };
+
+export const disIntegrateIhostDevice = (serialNumber: string) => {
+  return axios.delete<any, any>(`/open-api/v1/rest/devices/${serialNumber}`);
+};

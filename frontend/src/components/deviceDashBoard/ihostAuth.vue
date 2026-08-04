@@ -2,15 +2,24 @@
 import { getOpenToken } from '@/api';
 import { useUserStore } from '@/store/user';
 import { storeToRefs } from 'pinia';
+import { ElMessage } from 'element-plus';
+import {ref} from 'vue';
 const userStore = useUserStore()
 const {ihostSideConnect}=storeToRefs(userStore)
+const confirmBtLoading=ref(false)
 const emit=defineEmits(['changeIhostAuthDialogVisble'])
 const onConfirm=()=>{
+    confirmBtLoading.value = true;
     getOpenToken().then(res=>{
         ihostSideConnect.value=true;
         emit('changeIhostAuthDialogVisble',false)
+    }).catch(error=>{
+        ElMessage.error(error.message || '获取网关接口调用凭证失败，请稍后再试')
+    }).finally(()=>{
+        confirmBtLoading.value = false;
     })
 }
+
 </script>
 
 <template>
@@ -22,7 +31,7 @@ const onConfirm=()=>{
     </div>
     <div id="button-group">
         <el-button @click="emit('changeIhostAuthDialogVisble', false)">取消</el-button>
-        <el-button type="primary" @click="onConfirm">确认</el-button>
+        <el-button type="primary" @click="onConfirm" :loading="confirmBtLoading">确认</el-button>
     </div>
 </template>
 

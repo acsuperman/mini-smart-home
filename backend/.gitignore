@@ -25,3 +25,6 @@ dist-ssr
 
 # env files
 .env
+
+# 数据库文件（sqlite 运行时生成）
+data

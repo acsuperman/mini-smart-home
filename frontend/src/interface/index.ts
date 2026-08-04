@@ -21,6 +21,10 @@ export interface familyResponse {
     currentFamilyId: string
 }
 
+export interface roomDeviceList {
+    [roomId: string]: itemData[]
+}
+
 export interface itemData {
     name: string,
     family: { roomid: string, familyid: string },
@@ -32,8 +36,20 @@ export interface itemData {
     brandLogo: string,
     brandName: string,
     params: {
-        switches: Array<{ outlet: number, switch: "on" | "off" }>,
-        online: boolean
+        workMode:string,
+        workState:string,
+        manTargetTemp:string,
+        autoTargetTemp:string,
+        ecoTargetTemp:string,
+        boostRecoverTemp:string,
+        timerTargetTemp:string,
+        'mon': string,
+        'tues': string,
+        'wed': string,
+        'thur': string,
+        'fri': string,
+        'sat': string,
+        'sun': string
     }
 }
 
@@ -46,4 +62,15 @@ export interface thingListItem {
 export interface familyDeviceListResponse {
     thingList: Array<thingListItem>,
     total: number
+}
+
+export interface SseOptions {
+  url: string;
+  params?: Record<string, string>;
+}
+export type MessageHandler = (event: MessageEvent) => void;
+
+export interface WeeklyEntry {
+  startTimeInMinutes: number|null;
+  upperSetpoint: number|null;
 }

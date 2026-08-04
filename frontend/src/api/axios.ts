@@ -13,6 +13,7 @@ api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(response => {
     const userStore = useUserStore();
     if (response.data.error !== 0) {
+        if(response.data.msg)
         ElMessage.error(response.data.msg)
         const error = response.data.error
         if (error === 401) {

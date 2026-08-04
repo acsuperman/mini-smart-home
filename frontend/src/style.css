@@ -4,3 +4,71 @@
     background-color: rgb(248 250 252);
     overflow: auto;
 }
+
+.Capability-icon {
+    border-radius: 50%;
+    overflow: hidden;
+    width: 30px;
+    height: 30px;
+    margin-right: 8px;
+
+    img {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.Capability-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.component-item {
+    width: 100%;
+    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    font-weight: 500;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.Capability-container-left {
+    display: flex;
+    align-items: center;
+}
+
+.Capability-container-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+
+    .Double-content {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        flex-direction: column;
+
+        .describe {
+            font-weight: 500;
+            font-size: 16px;
+            color: #424242;
+        }
+
+        span {
+            color: #a1a1a1;
+            font-size: 14px;
+        }
+    }
+
+    .Single-content {
+        .describe {
+            font-weight: 500;
+            font-size: 16px;
+            color: #424242;
+        }
+    }
+}

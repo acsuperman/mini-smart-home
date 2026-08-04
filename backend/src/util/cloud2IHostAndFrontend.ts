@@ -1,23 +1,37 @@
-import { thermostat, wsClient } from '@/store';
+import { ihostSideUserInfo, wsClient } from '@/store';
 import { WebSocketMessage } from '@/interface';
 import { ERequestIhostHeadName } from '@/enum';
 import { requestIhost } from '@/api/ihost';
+import _ from 'lodash';
 import { generateRequestIhostHeadObject, paramsToWeeklySchedule } from '@/util';
 import { inspect } from 'node:util';
-import { thermostatStateParamMappings, WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
+import { initThermostatCapabilities, thermostatStateParamMappings, WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
+import { sendSseToAll } from '@/services/sseBridge';
+import { getDevice } from '@/db';
 const sysmsgSync = (data: WebSocketMessage) => {
-  if (data.action != 'sysmsg' || data.deviceid != thermostat.third_serial_number)
+  if (data.action != 'sysmsg')
     return;
+
   console.log('cloud-->>server via webSocket:设备上下线', data);
   const params = data.params as Record<string, any> | undefined;
 
   if (!params) return;
+  sendSseToAll('deviceStatusChange', { deviceid: data.deviceid!, params });
+  console.log('server-->>frontend via sse:设备上下线', { deviceid: data.deviceid, params });
+  if (!ihostSideUserInfo.openToken) 
+    return;
+  const targetDevice = getDevice(data.deviceid || '');
+
+  if (!targetDevice || !targetDevice.serialNumber) {
+    return;
+  }
+
   const requestBody = {
     event: {
       header: generateRequestIhostHeadObject(ERequestIhostHeadName.DEVICE_ONLINE_CHANGE_REPORT),
       endpoint: {
-        serial_number: thermostat.serial_number,
-        third_serial_number: thermostat.third_serial_number,
+        serial_number: targetDevice.serialNumber,
+        third_serial_number: targetDevice.thirdSerialNumber,
       },
       payload: {
         'online': params.online,
@@ -30,15 +44,24 @@ const sysmsgSync = (data: WebSocketMessage) => {
 };
 
 const updateSync = (data: WebSocketMessage) => {
-  if (data.action !== 'update' || data.deviceid != thermostat.third_serial_number)
+  if (data.action !== 'update')
     return;
-  console.log('cloud-->>server via webSocket:设备更新', data);
+  console.log('cloud-->>server via webSocket:设备状态更新', data);
 
   const params = data.params as Record<string, any> | undefined;
 
   if (!params) return;
+  sendSseToAll('deviceStatusChange', { deviceid: data.deviceid!, params });
+  console.log('server-->>frontend via sse:设备状态改变', { deviceid: data.deviceid, params });
+  if (!ihostSideUserInfo.openToken) 
+    return;
+  const targetDevice = getDevice(data.deviceid || '');
 
-  const state = thermostat.state as Record<string, any>;
+  if (!targetDevice || !targetDevice.serialNumber) {
+    return;
+  }
+
+  const state = {} as Record<string, any>;
   let isChangeState = false;
   let isChangeCapability = false;
 
@@ -54,11 +77,11 @@ const updateSync = (data: WebSocketMessage) => {
       event: {
         header: generateRequestIhostHeadObject(ERequestIhostHeadName.DEVICE_STATES_CHANGE_REPORT),
         endpoint: {
-          serial_number: thermostat.serial_number,
-          third_serial_number: thermostat.third_serial_number,
+          serial_number: targetDevice.serialNumber,
+          third_serial_number: targetDevice.thirdSerialNumber,
         },
         payload: {
-          state: thermostat.state,
+          state: state,
         },
       },
     };
@@ -73,16 +96,18 @@ const updateSync = (data: WebSocketMessage) => {
   }
 
   if (isChangeCapability) {
-    paramsToWeeklySchedule(thermostat.capabilities, params);
+    const capabilities = _.cloneDeep(initThermostatCapabilities);
+
+    paramsToWeeklySchedule(capabilities, params);
     const capabilityRequestBody = {
       event: {
         header: generateRequestIhostHeadObject(ERequestIhostHeadName.DEVICE_INFORMATION_UPDATED_REPORT),
         endpoint: {
-          serial_number: thermostat.serial_number,
-          third_serial_number: thermostat.third_serial_number,
+          serial_number: targetDevice.serialNumber,
+          third_serial_number: targetDevice.thirdSerialNumber,
         },
         payload: {
-          capabilities: thermostat.capabilities,
+          capabilities: capabilities!,
         },
       },
     };
@@ -97,7 +122,7 @@ const updateSync = (data: WebSocketMessage) => {
  
 };
 
-export function cloud2IHost() {
+export function cloud2IHostAndFrontend() {
   const { onMessage } = wsClient;
 
   onMessage(sysmsgSync);//上下线

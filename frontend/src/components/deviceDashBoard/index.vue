@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useUserStore } from "@/store/user";
 import { storeToRefs } from 'pinia'
-import { watch, ref, nextTick } from "vue";
+import { watch, ref, nextTick, onMounted } from "vue";
 import DeviceCard from "@/components/deviceDashBoard/deviceCard.vue";
 import type { itemData } from "@/interface";
-import DeviceControl from "@/components/deviceDashBoard/deviceControl.vue";
+import DeviceControl from "@/components/deviceControl/index.vue";
 import IhostAuth from "./ihostAuth.vue";
 import { cloneDeep } from "lodash";
+import { useSse } from "@/common/sse";
 
 
 
@@ -24,7 +25,7 @@ const ihostAuthDialogVisble=ref(false)
 
 
 const onDeviceCardClick = (device: itemData) => {
-    if (device.extra.uiid !== 4 || device.online === false)
+    if (device.extra.uiid !== 7017 || device.online === false)
         return;
     nowChooseDevice.value = device
     deviceControlDialogVisible.value = true
@@ -32,6 +33,9 @@ const onDeviceCardClick = (device: itemData) => {
 
 const changeIhostAuthDialogVisble=(visible:boolean)=>{
     ihostAuthDialogVisble.value=visible
+}
+const changeDeviceControlDialogVisible=(visible:boolean)=>{
+    deviceControlDialogVisible.value=visible
 }
 
 
@@ -56,6 +60,42 @@ watch(currentChooseInfo, async (newVal, oldVal) => {
     }
 }, {})
 
+onMounted(() => {
+    const sseClient=useSse({
+        url: '/api/sse/bridge',
+    })
+    sseClient.connect()
+    sseClient.sseAddEventListener('connectStatusChange', (event: MessageEvent) => {
+        const data = JSON.parse(event.data)
+        if(data.cloudSideConnect==false){
+            userStore.logout()
+        }
+        else{
+            userStore.cloudSideConnect=data.cloudSideConnect
+            userStore.ihostSideConnect=data.ihostSideConnect
+        }
+    })
+    sseClient.sseAddEventListener('deviceStatusChange', (event: MessageEvent) => {
+        const data = JSON.parse(event.data) as {
+            deviceid: string;
+            params: Record<string, any>;
+        }
+        const targetDevice=Object.values(roomDeviceList.value).flat().find(device=>device.deviceid===data.deviceid)
+        if(!targetDevice){
+            return
+        }
+        if(data.params.online!==undefined){
+            targetDevice.online=data.params.online
+            delete data.params.online
+        }
+        if(data.params.ihostSideSerialNumber!==undefined){
+            targetDevice.ihostSideSerialNumber=data.params.ihostSideSerialNumber
+            delete data.params.ihostSideSerialNumber
+        }
+        Object.assign(targetDevice.params, data.params)
+    })
+})
+
 
 
 
@@ -76,16 +116,20 @@ watch(currentChooseInfo, async (newVal, oldVal) => {
             </div>
         </div>
     </div>
-    <el-dialog v-model="deviceControlDialogVisible" :title="nowChooseDevice?.name" width="30%" center>
-        <DeviceControl :device="nowChooseDevice" />
-    </el-dialog>
-    <el-dialog v-model="ihostAuthDialogVisble" width="fit-content" center :show-close="false" class="ihost-auth-dialog">
+    <a-modal v-model:visible="deviceControlDialogVisible" width="520px" centered :closable="false" :footer="null" destroy-on-close>
+        <DeviceControl :device="nowChooseDevice!" @changeDeviceControlDialogVisible="changeDeviceControlDialogVisible"/>
+    </a-modal>
+    <a-modal v-model:visible="ihostAuthDialogVisble" width="520px" centered :closable="false" :footer="null" :body-style="{ padding: 0 }">
         <IhostAuth @changeIhostAuthDialogVisble="changeIhostAuthDialogVisble"></IhostAuth>
-    </el-dialog>
+    </a-modal>
 
 </template>
 
 <style scoped>
+:global(.ant-modal-content) {
+    border-radius: 16px;
+}
+
 #family-name {
     font-size: 40px;
     font-weight: bold;
@@ -96,10 +140,5 @@ watch(currentChooseInfo, async (newVal, oldVal) => {
     font-size: 20px;
     font-weight: bold;
     margin: 16px;
-}
-
-.ihost-auth-dialog {
-    padding: 0;
-    overflow: hidden;
 }
 </style>
