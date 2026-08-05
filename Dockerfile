@@ -1,5 +1,5 @@
 
-FROM node:22-slim AS frontend-build
+FROM --platform=linux/amd64 node:22-slim AS frontend-build
 
 RUN corepack enable
 ENV PNPM_HOME=/root/.local/share/pnpm
@@ -22,7 +22,7 @@ FROM node:22-slim AS runtime
 
 # better-sqlite3 是原生 C++ 模块，需编译：装 node-gyp 依赖（python3 + make + g++）
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      python3 make g++ \
+    python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
 
 RUN corepack enable

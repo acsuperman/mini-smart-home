@@ -119,7 +119,7 @@ onMounted(() => {
     <a-modal v-model:visible="deviceControlDialogVisible" width="520px" centered :closable="false" :footer="null" destroy-on-close>
         <DeviceControl :device="nowChooseDevice!" @changeDeviceControlDialogVisible="changeDeviceControlDialogVisible"/>
     </a-modal>
-    <a-modal v-model:visible="ihostAuthDialogVisble" width="520px" centered :closable="false" :footer="null" :body-style="{ padding: 0 }">
+    <a-modal v-model:visible="ihostAuthDialogVisble" width="520px" centered :closable="false" :footer="null">
         <IhostAuth @changeIhostAuthDialogVisble="changeIhostAuthDialogVisble"></IhostAuth>
     </a-modal>
 
