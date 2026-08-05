@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import fs from 'node:fs';
+import path from 'node:path';
 import { inspect } from 'node:util';
 import express, { Express } from 'express';
 import { connectEWeLink } from '@/cloud/init';
@@ -26,6 +28,16 @@ app.use((req, res, next) => {
 });
 
 app.use('/api', router);
+
+const staticDir = path.join(process.cwd(), 'static');
+
+if (fs.existsSync(staticDir)) {
+  app.use(express.static(staticDir));
+  app.get('*splat', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(staticDir, 'index.html'));
+  });
+}
 
 const init = () => {
   connectEWeLink();
