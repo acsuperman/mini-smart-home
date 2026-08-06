@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref, watch } from "vue";
-import { userLogin, getFamilyDeviceList, shutoffCloudSideConnect } from "@/api";
+import { userLogin, getFamilyDeviceList, userLogout } from "@/api";
 import router from "@/router";
 import { ElLoading } from 'element-plus'
 import type {  familyResponse, familyDeviceListResponse,roomDeviceList } from "@/interface";
@@ -37,7 +37,7 @@ export const useUserStore = defineStore("user", () => {
     };
 
     const logout = () => {
-        shutoffCloudSideConnect()
+        userLogout()
         cloudSideConnect.value=false
         ihostSideConnect.value=false
         familyInfo.value = {

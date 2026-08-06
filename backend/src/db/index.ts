@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { cloudSideUserInfo, ihostSideUserInfo } from '@/store';
+import { WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
@@ -28,7 +29,14 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS device (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     third_serial_number TEXT NOT NULL UNIQUE,
-    serial_number TEXT NOT NULL DEFAULT ''
+    serial_number TEXT NOT NULL DEFAULT '',
+    mon  TEXT NOT NULL DEFAULT '',
+    tues TEXT NOT NULL DEFAULT '',
+    wed  TEXT NOT NULL DEFAULT '',
+    thur TEXT NOT NULL DEFAULT '',
+    fri  TEXT NOT NULL DEFAULT '',
+    sat  TEXT NOT NULL DEFAULT '',
+    sun  TEXT NOT NULL DEFAULT ''
   );
 `);
 
@@ -87,12 +95,26 @@ export function saveUser(): void {
 export interface DeviceRow {
   thirdSerialNumber: string;
   serialNumber: string;
+  mon: string;
+  tues: string;
+  wed: string;
+  thur: string;
+  fri: string;
+  sat: string;
+  sun: string;
 }
 
 function rowToDevice(row: Record<string, unknown>): DeviceRow {
   return {
     thirdSerialNumber: row.third_serial_number as string,
     serialNumber: row.serial_number as string,
+    mon: row.mon as string,
+    tues: row.tues as string,
+    wed: row.wed as string,
+    thur: row.thur as string,
+    fri: row.fri as string,
+    sat: row.sat as string,
+    sun: row.sun as string,
   };
 }
 
@@ -102,18 +124,48 @@ export function getAllDevices(): DeviceRow[] {
   return rows.map(rowToDevice);
 }
 
+export function deleteDevice(thirdSerialNumber: string): void {
+  db.prepare('DELETE FROM device WHERE third_serial_number = ?').run(thirdSerialNumber);
+}
+
 export function getDevice(thirdSerialNumber: string): DeviceRow | undefined {
   const row = db.prepare('SELECT * FROM device WHERE third_serial_number = ?').get(thirdSerialNumber) as Record<string, unknown> | undefined;
 
   return row ? rowToDevice(row) : undefined;
 }
 
-export function upsertDevice(thirdSerialNumber: string, serialNumber: string): void {
+export function upsertDevice(
+  thirdSerialNumber: string,
+  serialNumber: string,
+  weekSchedule?: Partial<Pick<DeviceRow, (typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number]>>,
+): void {
+  let existing = getDevice(thirdSerialNumber) as Pick<DeviceRow, (typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number]>;
+
+  if (!existing) existing = { mon: '', tues: '', wed: '', thur: '', fri: '', sat: '', sun: '' };
+
+  const week = {
+    mon: weekSchedule?.mon ?? existing.mon,
+    tues: weekSchedule?.tues ?? existing.tues,
+    wed: weekSchedule?.wed ?? existing.wed,
+    thur: weekSchedule?.thur ?? existing.thur,
+    fri: weekSchedule?.fri ?? existing.fri,
+    sat: weekSchedule?.sat ?? existing.sat,
+    sun: weekSchedule?.sun ?? existing.sun,
+  };
+
   db.prepare(`
-    INSERT INTO device (third_serial_number, serial_number) VALUES (?, ?)
+    INSERT INTO device (third_serial_number, serial_number, mon, tues, wed, thur, fri, sat, sun)
+    VALUES (@thirdSerialNumber, @serialNumber, @mon, @tues, @wed, @thur, @fri, @sat, @sun)
     ON CONFLICT(third_serial_number) DO UPDATE SET
-      serial_number = excluded.serial_number
-  `).run(thirdSerialNumber, serialNumber);
+      serial_number = excluded.serial_number,
+      mon  = excluded.mon,
+      tues = excluded.tues,
+      wed  = excluded.wed,
+      thur = excluded.thur,
+      fri  = excluded.fri,
+      sat  = excluded.sat,
+      sun  = excluded.sun
+  `).run({ thirdSerialNumber, serialNumber, ...week });
 }
 
 export default db;

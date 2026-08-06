@@ -1,5 +1,5 @@
 import { requestIhost } from '@/api/ihost';
-import { initThermostatCapabilities } from '@/common';
+import { initThermostatCapabilities, WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
 import { upsertDevice } from '@/db';
 import { EAdaptiveRecoveryStatus, ERequestIhostHeadName, EThermostatSubName, EThermostatTargetSetpointSubName, EThermostatWorkMode } from '@/enum';
 import { DiscoveryResponsePayload, IhostRequestBody, ItemData } from '@/interface'; 
@@ -57,7 +57,11 @@ export default function integrateDevice(req,res) {
   requestIhost(integrateThermostatIntoIHost).then((integrateRes) => {
     const targetDevice = (integrateRes.payload as DiscoveryResponsePayload).endpoints[0];
 
-    upsertDevice(targetDevice.third_serial_number, targetDevice.serial_number);
+    const weekSchedule = Object.fromEntries(
+      WEEKLY_SCHEDULE_PARAM_KEYS.map((key) => [key, device.params[key]]),
+    ) as Record<(typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number], string>;
+
+    upsertDevice(targetDevice.third_serial_number, targetDevice.serial_number, weekSchedule);
     sendSseToAll('deviceStatusChange', { deviceid: targetDevice.third_serial_number,params: { ihostSideSerialNumber: targetDevice.serial_number } });
     res.json(generateRes(0, '同步成功', {}));
   }).catch((error) => {

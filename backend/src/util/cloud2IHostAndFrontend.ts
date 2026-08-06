@@ -7,7 +7,7 @@ import { generateRequestIhostHeadObject, paramsToWeeklySchedule } from '@/util';
 import { inspect } from 'node:util';
 import { initThermostatCapabilities, thermostatStateParamMappings, WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
 import { sendSseToAll } from '@/services/sseBridge';
-import { getDevice } from '@/db';
+import { getDevice, upsertDevice } from '@/db';
 const sysmsgSync = (data: WebSocketMessage) => {
   if (data.action != 'sysmsg')
     return;
@@ -97,6 +97,13 @@ const updateSync = (data: WebSocketMessage) => {
 
   if (isChangeCapability) {
     const capabilities = _.cloneDeep(initThermostatCapabilities);
+    const weekSchedule = Object.fromEntries(
+      WEEKLY_SCHEDULE_PARAM_KEYS.map((key) => [key, params[key]]),
+    ) as Record<(typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number], string>;
+
+    upsertDevice(targetDevice.thirdSerialNumber, targetDevice.serialNumber, weekSchedule);
+
+    Object.assign(params, _.omit(targetDevice, ['thirdSerialNumber', 'serialNumber']));
 
     paramsToWeeklySchedule(capabilities, params);
     const capabilityRequestBody = {

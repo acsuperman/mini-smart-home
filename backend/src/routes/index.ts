@@ -1,11 +1,11 @@
 import express from 'express';
-import cloudSideLogin from '@/services/cloudSideLogin';
+import login from '@/services/login';
 import getFamily from '@/services/getFamily';
 import getFamilyThing from '@/services/getFamilyThing';
 import integrateDevice from '@/services/integrateDevice';
 import disIntegrateDevice from '@/services/disIntegrateDevice';
 import getOpenToken from '@/services/getOpenToken';
-import shutoffCloudSideConnect from '@/services/shutoffCloudSideConnect';
+import logout from '@/services/logout';
 import sseBridge from '@/services/sseBridge';
 import dealIhostDirective from '@/services/dealIhostDirective';
 import updateDevice from '@/services/updateDevice';
@@ -13,8 +13,8 @@ import updateDevice from '@/services/updateDevice';
 const router = express.Router();
 
 // ================================frontend=========================================
-router.post('/cloudSideConnect', cloudSideLogin);
-router.post('/shutoffCloudSideConnect',shutoffCloudSideConnect);
+router.post('/login', login);
+router.post('/logout',logout);
 router.get('/v2/family', getFamily);
 router.get('/v2/device/thing', getFamilyThing);
 router.post('/devices/integrate', integrateDevice);

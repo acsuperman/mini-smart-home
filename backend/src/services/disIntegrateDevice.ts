@@ -1,5 +1,5 @@
 import { disIntegrateIhostDevice } from '@/api/ihost';
-import { upsertDevice } from '@/db';
+import { deleteDevice } from '@/db';
 import { ItemData } from '@/interface';
 import { generateRes } from '@/util';
 import { sendSseToAll } from './sseBridge';
@@ -14,7 +14,8 @@ export default function disIntegrateDevice(req,res) {
   }
 
   disIntegrateIhostDevice(device.ihostSideSerialNumber).then(() => {
-    upsertDevice(device.deviceid, '');
+
+    deleteDevice(device.deviceid);
     res.json(generateRes(0, '终止同步成功',{}));
     sendSseToAll('deviceStatusChange', { deviceid: device.deviceid,params: { ihostSideSerialNumber: '' } });
   }).catch((error) => {

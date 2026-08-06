@@ -12,7 +12,7 @@ export const userLogin = (account: string, password: string, countryCode: string
         countryCode,
         account
     }
-    return axios.post<any, loginResponse>("/api/cloudSideConnect", data)
+    return axios.post<any, loginResponse>("/api/login", data)
 }
 
 export const getFamilyAndRoomInfo = () => {
@@ -28,8 +28,8 @@ export const getFamilyDeviceList = (familyid: string) => {
     });
 }
 
-export const shutoffCloudSideConnect =()=>{
-    return axios.post('/api/shutoffCloudSideConnect')
+export const userLogout =()=>{
+    return axios.post('/api/logout')
 }
 
 export const getOpenToken =()=>{
