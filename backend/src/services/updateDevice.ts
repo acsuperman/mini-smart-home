@@ -8,7 +8,7 @@ import { generateRequestIhostHeadObject, paramsToWeeklySchedule,generateWsData,t
 import { inspect } from 'node:util';
 import { initThermostatCapabilities, thermostatStateParamMappings, WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
 import { sendSseToAll } from '@/services/sseBridge';
-import { getDevice } from '@/db';
+import { getDevice, upsertDevice } from '@/db';
 
 export default function updateDevice(req,res) {
   const deviceid = req.params.deviceid;
@@ -29,7 +29,7 @@ export default function updateDevice(req,res) {
   //ihost部分
   if (!ihostSideUserInfo.openToken) 
     return res.json(generateRes(0, '', {}));;
-  const targetDevice = getDevice(deviceid || '');
+  let targetDevice = getDevice(deviceid || '');
 
   if (!targetDevice || !targetDevice.serialNumber) {
     return res.json(generateRes(0, '', {}));;
@@ -71,7 +71,11 @@ export default function updateDevice(req,res) {
 
   if (isChangeCapability) {
     const capabilities = _.cloneDeep(initThermostatCapabilities);
+    const weekSchedule = Object.fromEntries(WEEKLY_SCHEDULE_PARAM_KEYS.map((key) => [key, params[key]])) as Record<(typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number], string>;
 
+    upsertDevice(targetDevice.thirdSerialNumber, targetDevice.serialNumber, weekSchedule);
+    targetDevice = getDevice(deviceid)!;
+    Object.assign(params, _.omit(targetDevice, ['thirdSerialNumber', 'serialNumber']));
     paramsToWeeklySchedule(capabilities, params);
     const capabilityRequestBody = {
       event: {

@@ -4,9 +4,10 @@ import { EDirectiveResponseHeadName } from '@/enum';
 import { Express } from 'express';
 import { generateWsData,findAutoModeCapa,weeklyScheduleToHexParams, toIhostResHeader } from '@/util';
 import { inspect } from 'node:util';
-import { initThermostatCapabilities, thermostatStateParamMappings } from '@/common';
+import { initThermostatCapabilities, thermostatStateParamMappings, WEEKLY_SCHEDULE_PARAM_KEYS } from '@/common';
 import { sendSseToAll } from './sseBridge';
 import _ from 'lodash';
+import { upsertDevice } from '@/db';
 
 const updateDeviceStates = (directive: DirectiveObject): Promise<DirectiveResponseBody> => {
   const { state } = directive.payload as { state: Record<string, any> };
@@ -67,6 +68,8 @@ const configureDeviceCapabilities = (directive: DirectiveObject): Promise<Direct
     });
 
   const params = weeklyScheduleToHexParams(capabilities);
+  const weekSchedule = Object.fromEntries(WEEKLY_SCHEDULE_PARAM_KEYS.map((key) => [key, params[key]])) as Record<(typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number], string>;
+  upsertDevice(directive.endpoint.third_serial_number, directive.endpoint.serial_number, weekSchedule);
 
   const wsData = generateWsData(params,directive.endpoint.third_serial_number);
 

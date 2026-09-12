@@ -55,7 +55,7 @@ const updateSync = (data: WebSocketMessage) => {
   console.log('server-->>frontend via sse:设备状态改变', { deviceid: data.deviceid, params });
   if (!ihostSideUserInfo.openToken) 
     return;
-  const targetDevice = getDevice(data.deviceid || '');
+  let targetDevice = getDevice(data.deviceid || '');
 
   if (!targetDevice || !targetDevice.serialNumber) {
     return;
@@ -102,6 +102,7 @@ const updateSync = (data: WebSocketMessage) => {
     ) as Record<(typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number], string>;
 
     upsertDevice(targetDevice.thirdSerialNumber, targetDevice.serialNumber, weekSchedule);
+    targetDevice = getDevice(data.deviceid || '')!;
 
     Object.assign(params, _.omit(targetDevice, ['thirdSerialNumber', 'serialNumber']));
 

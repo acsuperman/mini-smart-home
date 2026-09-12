@@ -43,11 +43,23 @@ const parseDayHexSchedule = (hex: string): WeeklyEntry[] => {
   return result;
 };
 
-const formatDayHexSchedule = (entries: WeeklyEntry[]): string =>
-  entries.map(e =>
+const SCHEDULE_ENTRY_HEX_LENGTH = 8;
+const DAY_SCHEDULE_HEX_LENGTH = 48;
+
+const formatDayHexSchedule = (entries: WeeklyEntry[]): string => {
+  const hex = entries.map(e =>
     e.startTimeInMinutes.toString(16).padStart(4, '0')
     + Math.round(e.upperSetpoint * 10).toString(16).padStart(4, '0'),
   ).join('');
+
+  if (hex.length === DAY_SCHEDULE_HEX_LENGTH) return hex;
+
+  // 时段不足 6 条时，用最后一个时段反复补齐
+  const lastEntry = hex.slice(-SCHEDULE_ENTRY_HEX_LENGTH);
+  const padding = lastEntry.repeat((DAY_SCHEDULE_HEX_LENGTH - hex.length) / SCHEDULE_ENTRY_HEX_LENGTH);
+
+  return (hex + padding);
+};
 
 export const findAutoModeCapa = (capabilities: ThermostatCapabilities[]) =>
   capabilities.find(

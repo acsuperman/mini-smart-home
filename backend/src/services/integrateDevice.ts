@@ -34,7 +34,7 @@ export default function integrateDevice(req,res) {
       },
       'thermostat-target-setpoint': {
         [EThermostatTargetSetpointSubName.MANUAL_MODE]: { targetSetpoint: params.manTargetTemp / 10 },
-        [EThermostatTargetSetpointSubName.AUTO_MODE]: { targetSetpoint: (params.autoTargetTemp ?? 0) / 10 },
+        [EThermostatTargetSetpointSubName.AUTO_MODE]: { targetSetpoint: (params.autoTargetTemp ?? 200) / 10 },
         [EThermostatTargetSetpointSubName.ECO_MODE]: { targetSetpoint: params.ecoTargetTemp / 10 },
       },
     },
