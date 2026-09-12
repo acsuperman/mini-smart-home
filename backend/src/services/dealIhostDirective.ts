@@ -32,17 +32,21 @@ const updateDeviceStates = (directive: DirectiveObject): Promise<DirectiveRespon
   sendSseToAll('deviceStatusChange', { deviceid: directive.endpoint.third_serial_number, params });
   console.log('server-->>frontend via sse:设备状态更新', inspect({ deviceid: directive.endpoint.third_serial_number, params }, { depth: null, colors: true }));
 
-  return sendRequest(wsData).then(() => ({
-    event: {
-      header: toIhostResHeader(EDirectiveResponseHeadName.RESPONSE, directive.header.message_id),
-      payload: {},
-    },
-  })).catch(() => ({
-    event: {
-      header: toIhostResHeader(EDirectiveResponseHeadName.ERROR_RESPONSE, directive.header.message_id),
-      payload: { type: 'ENDPOINT_UNREACHABLE' },
-    },
-  }));
+  return sendRequest(wsData).then((wsRes) => {
+    return {
+      event: {
+        header: toIhostResHeader(EDirectiveResponseHeadName.RESPONSE, directive.header.message_id),
+        payload: {},
+      },
+    };
+  }).catch((error) => {
+    return {
+      event: {
+        header: toIhostResHeader(EDirectiveResponseHeadName.ERROR_RESPONSE, directive.header.message_id),
+        payload: { type: 'ENDPOINT_UNREACHABLE' },
+      },
+    };
+  });
   
 };
 
@@ -69,6 +73,7 @@ const configureDeviceCapabilities = (directive: DirectiveObject): Promise<Direct
 
   const params = weeklyScheduleToHexParams(capabilities);
   const weekSchedule = Object.fromEntries(WEEKLY_SCHEDULE_PARAM_KEYS.map((key) => [key, params[key]])) as Record<(typeof WEEKLY_SCHEDULE_PARAM_KEYS)[number], string>;
+
   upsertDevice(directive.endpoint.third_serial_number, directive.endpoint.serial_number, weekSchedule);
 
   const wsData = generateWsData(params,directive.endpoint.third_serial_number);
@@ -78,17 +83,21 @@ const configureDeviceCapabilities = (directive: DirectiveObject): Promise<Direct
   sendSseToAll('deviceStatusChange', { deviceid: directive.endpoint.third_serial_number, params });
   console.log('server-->>frontend via sse:设备状态更新', inspect({ deviceid: directive.endpoint.third_serial_number, params }, { depth: null, colors: true }));
 
-  return sendRequest(wsData).then(() => ({
-    event: {
-      header: toIhostResHeader(EDirectiveResponseHeadName.RESPONSE, directive.header.message_id),
-      payload: {},
-    },
-  })).catch(() => ({
-    event: {
-      header: toIhostResHeader(EDirectiveResponseHeadName.ERROR_RESPONSE, directive.header.message_id),
-      payload: { type: 'ENDPOINT_UNREACHABLE' },
-    },
-  }));
+  return sendRequest(wsData).then((wsRes) => {
+    return {
+      event: {
+        header: toIhostResHeader(EDirectiveResponseHeadName.RESPONSE, directive.header.message_id),
+        payload: {},
+      },
+    };
+  }).catch((error) => {
+    return {
+      event: {
+        header: toIhostResHeader(EDirectiveResponseHeadName.RESPONSE, directive.header.message_id),
+        payload: {},
+      },
+    };
+  });
 };
 
 export default async function dealIhostDirective(req,res) {
